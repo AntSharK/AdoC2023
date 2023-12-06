@@ -15,7 +15,7 @@ namespace AdventOfCode2023
             const int height = 141;
             //const int height = 4;
 
-            var nums = new HashSet<double>();
+            var nums = new List<double>();
 
             var sum = 0d;
             var input = new char[width, height];
@@ -94,6 +94,10 @@ namespace AdventOfCode2023
                 }
             }
 
+            foreach (var k in nums)
+            {
+                Console.Write(k + ", ");
+            }
             Console.Write(nums.Sum());
         }
     }
