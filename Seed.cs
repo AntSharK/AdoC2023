@@ -321,20 +321,29 @@ namespace AdventOfCode2023
 (570650779,7921916,19173702),
 };
 
-        public static double Find(double numToFind, List<(double, double, double)> range)
+        public static (double, int) Find(double numToFind, List<(double, double, double)> range)
         {
             var soilNum = numToFind;
+            var mappingNum = 0;
+            var foundInMap = false;
             foreach (var s in range)
             {
+                mappingNum++;
                 var seedRange = s.Item2;
-                if (s.Item2 <= numToFind && s.Item3 + s.Item2 >= numToFind)
+                if (s.Item2 <= numToFind && s.Item3 + s.Item2 > numToFind)
                 {
                     soilNum = s.Item1 + (numToFind - s.Item2);
+                    foundInMap = true;
                     break;
                 }
             }
 
-            return soilNum;
+            if (!foundInMap)
+            {
+                return (soilNum, -1);
+            }
+
+            return (soilNum, mappingNum);
         }
 
         public static void Run()
@@ -358,12 +367,12 @@ namespace AdventOfCode2023
     1450749684 ,
     123906789 , // 384,367,353
     2044765513 ,
-    620379445 , // 69,841,804
+    620379445 , // 69,841,803
     1609835129,
     60050954 // 1,765,298,119
 };
 
-            Console.WriteLine(FindMinRange(inputs));
+           Console.WriteLine(FindMinRange(inputs));
         }
 
         public static double FindMinRange(List<double> ranges)
@@ -374,10 +383,11 @@ namespace AdventOfCode2023
                 var localMinLoc = Double.MaxValue;
                 for (double seed = ranges[i]; seed < ranges[i] + ranges[i + 1]; seed++)
                 {
-                    var location = FindSeed(seed);
-                    if (location < localMinLoc)
+                    var r = FindSeed(seed);
+                    if (r.Location < localMinLoc)
                     {
-                        localMinLoc = location;
+                        localMinLoc = r.Location;
+                        Console.WriteLine("Found: " + r);
                     }
                 }
 
@@ -392,17 +402,50 @@ namespace AdventOfCode2023
             return minLoc;
         }
 
-        public static double FindSeed(double seed)
+        public static MapStruc FindSeed(double seed)
         {
-            var soil = Seed.Find(seed, Seed.seedToSoil);
-            var fertilizer = Seed.Find(soil, Seed.soilToFertilizer);
-            var water = Seed.Find(fertilizer, Seed.fertilizerToWater);
-            var light = Seed.Find(water, Seed.waterToLight);
-            var temperature = Seed.Find(light, Seed.lightToTemperature);
-            var humidity = Seed.Find(temperature, Seed.temperatureToHumidity);
-            var location = Seed.Find(humidity, Seed.humidityToLocation);
+            var r = new MapStruc();
+            r.Seed = seed;
+            (r.Soil, r.SoilMap) = Find(r.Seed, seedToSoil);
+            (r.Fert, r.FertMap) = Find(r.Soil, soilToFertilizer);
+            (r.Water, r.WaterMap) = Find(r.Fert, fertilizerToWater);
+            (r.Light, r.LightMap) = Find(r.Water, waterToLight);
+            (r.Temp, r.TempMap) = Find(r.Light, lightToTemperature);
+            (r.Humid, r.HumidMap) = Find(r.Temp, temperatureToHumidity);
+            (r.Location, r.LocationMap) = Find(r.Humid, humidityToLocation);
+            return r;
+        }
 
-            return location;
+        public class MapStruc
+        {
+            public double Seed;
+            public int SeedMap;
+            public double Soil;
+            public int SoilMap;
+            public double Fert;
+            public int FertMap;
+            public double Water;
+            public int WaterMap;
+            public double Light;
+            public int LightMap;
+            public double Temp;
+            public int TempMap;
+            public double Humid;
+            public int HumidMap;
+            public double Location;
+            public int LocationMap;
+
+            public override string ToString()
+            {
+                return Seed + ":" + SeedMap + " -> " 
+                    + Soil + ":" + SoilMap + " -> " 
+                    + Fert + ":" + FertMap + " -> " 
+                    + Water + ":" + WaterMap + " -> " 
+                    + Light + ":" + LightMap + " -> " 
+                    + Temp + ":" + TempMap + " -> " 
+                    + Humid + ":" + HumidMap + " -> " 
+                    + Location + ":" + LocationMap;
+            }
         }
 
         public static void ConvertToDelimited()

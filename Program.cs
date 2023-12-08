@@ -2,4 +2,4 @@
 using System.Text;
 using AdventOfCode2023;
 
-Camel.Run();
+CamelTree.Run();
