@@ -11,6 +11,7 @@ namespace AdventOfCode2023
         public static void Run()
         {
             var instruction = "LRLRRLLRRLRRRLRLRRRLLRRLLLLRRRLRRRLRRLRRLRRRLRRRLLRRLRLRRLRRRLLLRRLRRLLRLLRRRLRRRLLRLRRRLRLLRRLLLRLRRRLRRRLRRRLLRLRRRLLRRLRLRLLRRLRRRLRRLRLLRLRRRLRRLRLRLRRLRRRLRRRLRRRLRRLRRRLLRRLRRLLRRRLLRLRLRLRLLLRRLRLRRLRRLRRLRRLRRRLRRRLRLRRRLRLRRRLRRLRLLRLRRLRLRLLLRLLLRRRLRRLLLRLRRRR";
+            //var instruction = "LR";
 
             var line = "dummy";
             var nodes = new Dictionary<string, Node>();
@@ -35,19 +36,55 @@ namespace AdventOfCode2023
                 nodes[nodeName].Links['R'] = nodes[rightName];
             }
 
-            var currentNode = nodes["AAA"];
-            var destNode = nodes["ZZZ"];
-            var steps = 0;
-            while (currentNode != destNode)
+            var currentNodes = new List<Node>();
+            var startNodes = new List<string>();
+            foreach (var node in nodes)
             {
-                foreach (var c in instruction)
+                if (node.Key.EndsWith('A'))
                 {
-                    currentNode = currentNode.Links[c];
-                    steps++;
+                    currentNodes.Add(node.Value);
+                    startNodes.Add(node.Key);
                 }
             }
 
-            Console.WriteLine(steps);
+            foreach (var node in nodes) 
+            {
+                node.Value.FindNextStep(instruction);
+            }
+
+            foreach (var nodeName in startNodes)
+            {
+                var startNode = nodes[nodeName];
+                var currentNode = startNode;
+                for (var i = 1; i <= nodes.Count+1; i++)
+                {
+                    currentNode = currentNode.NextStep;
+                    if (currentNode.Name.EndsWith('Z'))
+                    {
+                        startNode.StepsToTerminate.Add(i);
+                    }
+                }
+            }
+
+            // Write out the cycles
+            foreach (var nodeName in startNodes)
+            {
+                var startNode = nodes[nodeName];
+                var lasti = 0d;
+                foreach (var i in startNode.StepsToTerminate)
+                {
+                    Console.Write(i + " (" + (i-lasti) + "), ");
+                    lasti = i;
+                }
+
+                Console.WriteLine();
+            }
+            // All these are prime
+            var lcm = 47d * 71d * 59d * 73d * 53d * 67d;
+            Console.WriteLine(lcm);
+            Console.WriteLine(instruction.Length);
+            // LCM is 51036601909, length of instruction is 271
+            Console.WriteLine((lcm) * 271d); // 51,036,601,909 * 271
         }
     }
 
@@ -55,5 +92,18 @@ namespace AdventOfCode2023
     {
         public string Name;
         public Dictionary<char, Node> Links = new Dictionary<char, Node>();
+        public Node NextStep;
+        public List<double> StepsToTerminate = new List<double>();
+
+        public void FindNextStep(string instruction)
+        {
+            var currentNode = this;
+            foreach (var c in instruction)
+            {
+                currentNode = currentNode.Links[c];
+            }
+
+            this.NextStep = currentNode;
+        }
     }
 }
