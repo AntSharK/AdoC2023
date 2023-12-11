@@ -32,9 +32,36 @@ namespace AdventOfCode2023._2022
                 beaconLocations.Add((bx, by));
             }
 
-            var rowNum = 2000000;
-            var rangeExclude = RangeExclude(rowNum, xyd);
+            var limit = 4000000d;
+            for (var rowNum = 0; rowNum <= limit; rowNum++)
+            {
+                var rangeExclude = RangeExclude(rowNum, xyd);
+                rangeExclude.Sort();
 
+                var rangeEnd = 0d;
+                foreach (var range in rangeExclude)
+                {
+                    if (range.Item1 > rangeEnd + 1)
+                    {
+                        Console.WriteLine($"Row:{rowNum}, Col:{rangeEnd}-{range.Item1}");
+                        Console.WriteLine(rowNum + (rangeEnd + 1d) * limit);
+                        return;
+                    }
+                    if (range.Item2 > rangeEnd)
+                    {
+                        rangeEnd = range.Item2;
+                    }
+
+                    if (rangeEnd > limit)
+                    {
+                        break;
+                    }
+                }
+
+                if (rowNum % 1000000 == 0) { Console.WriteLine($"At: {rowNum}"); }
+            }
+
+            /* Part A
             var excludedNumbers = new HashSet<double>();
             foreach (var range in rangeExclude)
             {
@@ -56,6 +83,7 @@ namespace AdventOfCode2023._2022
             }
 
             Console.WriteLine(excludedNumbers.Count);
+            */
         }
 
         private static List<(double, double)> RangeExclude(double y, List<(double, double, double)> xyds)
