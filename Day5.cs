@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AdventOfCode2023
 {
-    internal class Seed
+    internal class Day5
     {
 
         public static List<(double, double, double)> seedToSoilTest = new List<(double, double, double)>()

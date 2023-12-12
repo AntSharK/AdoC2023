@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AdventOfCode2023
 {
-    internal class Cosmic
+    internal class Day11
     {
         public static void Run()
         {

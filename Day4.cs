@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AdventOfCode2023
 {
-    internal class Cards
+    internal class Day4
     {
         public static void Run()
         {

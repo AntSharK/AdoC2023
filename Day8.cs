@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AdventOfCode2023
 {
-    internal class CamelTree
+    internal class Day8
     {
         public static void Run()
         {

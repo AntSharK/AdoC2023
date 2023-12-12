@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AdventOfCode2023
 {
-    internal class Gear
+    internal class Day3
     {
         public static void Run()
         {

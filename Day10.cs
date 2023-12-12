@@ -10,7 +10,7 @@ using System.Xml.Linq;
 
 namespace AdventOfCode2023
 {
-    internal class FindLoop
+    internal class Day10
     {
         public static void Run()
         {
