@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AdventOfCode2023._2022
+namespace AdventOfCode2023
 {
     internal class Day12
     {

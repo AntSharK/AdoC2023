@@ -65,7 +65,7 @@ namespace AdventOfCode2023._2022
             if (directionToMove.Item1 == 0 && directionToMove.Item2 > 1) { return (tailPos.Item1, tailPos.Item2 + 1); }
             else if (directionToMove.Item1 == 0 && directionToMove.Item2 < -1) { return (tailPos.Item1, tailPos.Item2 - 1); }
             else if (directionToMove.Item1 > 1 && directionToMove.Item2 == 0) { return (tailPos.Item1 + 1, tailPos.Item2); }
-            else if (directionToMove.Item1 < -1 && directionToMove.Item2 == 0) { return  (tailPos.Item1 - 1, tailPos.Item2); }
+            else if (directionToMove.Item1 < -1 && directionToMove.Item2 == 0) { return (tailPos.Item1 - 1, tailPos.Item2); }
 
             else if (directionToMove.Item1 == 1 && directionToMove.Item2 > 1) { return (tailPos.Item1 + 1, tailPos.Item2 + 1); }
             else if (directionToMove.Item1 == 1 && directionToMove.Item2 < -1) { return (tailPos.Item1 + 1, tailPos.Item2 - 1); }
@@ -76,6 +76,12 @@ namespace AdventOfCode2023._2022
             else if (directionToMove.Item1 < -1 && directionToMove.Item2 == 1) { return (tailPos.Item1 - 1, tailPos.Item2 + 1); }
             else if (directionToMove.Item1 > 1 && directionToMove.Item2 == -1) { return (tailPos.Item1 + 1, tailPos.Item2 - 1); }
             else if (directionToMove.Item1 < -1 && directionToMove.Item2 == -1) { return (tailPos.Item1 - 1, tailPos.Item2 - 1); }
+
+            else if (directionToMove.Item1 < -1 && directionToMove.Item2 < -1) { return (tailPos.Item1 - 1, tailPos.Item2 - 1); }
+            else if (directionToMove.Item1 < -1 && directionToMove.Item2 > 1) { return (tailPos.Item1 - 1, tailPos.Item2 + 1); }
+            else if (directionToMove.Item1 > 1 && directionToMove.Item2 > 1) { return (tailPos.Item1 + 1, tailPos.Item2 + 1); }
+            else if (directionToMove.Item1 > 1 && directionToMove.Item2 < -1) { return (tailPos.Item1 + 1, tailPos.Item2 - 1); }
+
             return tailPos;
         }
     }
