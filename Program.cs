@@ -3,4 +3,4 @@ using System.Text;
 using AdventOfCode2023;
 using AdventOfCode2023._2022;
 
-AdventOfCode2023.Day14.Run();
+AdventOfCode2023.Day16.Run();
