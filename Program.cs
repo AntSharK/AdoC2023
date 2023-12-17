@@ -1,6 +1,5 @@
-﻿// See https://aka.ms/new-console-template for more information
-using System.Text;
+﻿using System;
+using System.Diagnostics;
 using AdventOfCode2023;
-using AdventOfCode2023._2022;
 
-AdventOfCode2023.Day16.Run();
+Day17.Run();

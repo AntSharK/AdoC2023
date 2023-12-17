@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,13 @@ namespace AdventOfCode2023
 {
     internal class Day16
     {
+        public static Stopwatch w1;
+        public static Stopwatch w2;
+        public static Stopwatch w3;
+        public static Stopwatch w4;
+        public static Stopwatch w5;
+        public static Stopwatch w6;
+
         public static void Run()
         {
             var lines = new List<string>();
@@ -30,6 +38,13 @@ namespace AdventOfCode2023
                 }
             }
 
+            w1 = Stopwatch.StartNew();
+            w2 = Stopwatch.StartNew();
+            w3 = Stopwatch.StartNew();
+            w4 = Stopwatch.StartNew();
+            w5 = Stopwatch.StartNew();
+            w6 = Stopwatch.StartNew();
+
             var maxTop = 0;
             for (var i = 0; i < lines[0].Length; i++)
             {
@@ -42,7 +57,7 @@ namespace AdventOfCode2023
             }
             Console.WriteLine($"TOP: {maxTop}");
 
-            var maxLeft = 0;
+           /* var maxLeft = 0;
             for (var i = 0; i < lines.Count; i++)
             {
                 var startBeam = (-1, i, 1, 0);
@@ -78,7 +93,9 @@ namespace AdventOfCode2023
                     maxBottom = e;
                 }
             }
-            Console.WriteLine($"BOTTOM: {maxBottom}");
+            Console.WriteLine($"BOTTOM: {maxBottom}");*/
+
+            Console.WriteLine($"Runtime: W1:{w1.ElapsedMilliseconds}, W2:{w2.ElapsedMilliseconds}, W3:{w3.ElapsedMilliseconds}, W4:{w4.ElapsedMilliseconds}, W5:{w5.ElapsedMilliseconds}, W6:{w6.ElapsedMilliseconds}.");
         }
 
         private static int FindEnergizedTiles(char[,] maze, (int, int, int, int) startBeam)
@@ -92,18 +109,22 @@ namespace AdventOfCode2023
 
             while (beamsStillTravelling.Count > 0)
             {
+                w1.Start();
                 var nextBeam = beamsStillTravelling[0];
                 beamsStillTravelling.RemoveAt(0);
+                w1.Stop();
 
-                try
-                {
+                    w2.Start();
                     // Advance beam in direction of movement, then change direction
                     nextBeam.Item1 += nextBeam.Item3;
                     nextBeam.Item2 += nextBeam.Item4;
-                    var c = maze[nextBeam.Item1, nextBeam.Item2];
+
+                if (nextBeam.Item1 < 0 || nextBeam.Item2 < 0 || nextBeam.Item1 >= 110 || nextBeam.Item2 >= 110) continue;
+                var c = maze[nextBeam.Item1, nextBeam.Item2];
 
                     var xDir = nextBeam.Item3;
                     var yDir = nextBeam.Item4;
+                    w2.Stop();
                     switch (c)
                     {
                         case '\\':
@@ -126,8 +147,10 @@ namespace AdventOfCode2023
                                 var splitBeam = (nextBeam.Item1, nextBeam.Item2, 0, -1);
                                 if (!beams.Contains(splitBeam))
                                 {
+                                    w6.Start();
                                     beams.Add(splitBeam);
                                     beamsStillTravelling.Add(splitBeam);
+                                    w6.Stop();
                                 }
                             }
                             break;
@@ -138,35 +161,36 @@ namespace AdventOfCode2023
                                 nextBeam.Item4 = 0;
 
                                 // Spawn a new beam
+                                w5.Start();
                                 var splitBeam = (nextBeam.Item1, nextBeam.Item2, -1, 0);
                                 if (!beams.Contains(splitBeam))
                                 {
                                     beams.Add(splitBeam);
                                     beamsStillTravelling.Add(splitBeam);
                                 }
+                                w5.Stop();
                             }
                             break;
                         default:
                             break;
                     }
 
+                    w3.Start();
                     if (!beams.Contains(nextBeam))
                     {
                         beams.Add(nextBeam);
                         beamsStillTravelling.Add(nextBeam);
                     }
-                }
-                // If out of bounds, abort
-                catch
-                {
-                }
+                    w3.Stop();
             }
 
+            w4.Start();
             var coords = new HashSet<(int, int)>();
             foreach (var beam in beams)
             {
                 coords.Add((beam.Item1, beam.Item2));
             }
+            w4.Stop();
 
             // Minus 1 to discount the start
             Console.WriteLine($"Start at ({startBeam.Item1}, {startBeam.Item2}) energizes {(coords.Count - 1)} tiles.");
