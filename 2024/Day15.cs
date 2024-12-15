@@ -74,19 +74,30 @@ namespace AdventOfCode2024
                 { '>', (1, 0) },
                 { '<', (-1, 0) },
                 { 'v', (0, 1) },
+                { 'w', (0, -1) },
+                { 'd', (1, 0) },
+                { 'a', (-1, 0) },
+                { 's', (0, 1) },
             };
-            
+
             // Move
             foreach (var c in instructions)
             {
                 var direction = directions[c];
                 //robotPos = Move(map, robotPos, direction);
-                Move2(map, robotPos, direction);
+                var canMove = Move2(map, robotPos, direction);
+                if (canMove)
+                {
+                    MoveBoxes(map, (robotPos.Item1 + direction.Item1, robotPos.Item2 + direction.Item2), direction);
+
+                    map[robotPos.Item1, robotPos.Item2] = '.';
+                    map[robotPos.Item1 + direction.Item1, robotPos.Item2 + direction.Item2] = '@';
+
+                }
                 robotPos = FindRobot(map);
 
-                Thread.Sleep(25);
-                Console.WriteLine($"DIRECTION: {c}");
-                Print(map);
+                //Console.WriteLine($"DIRECTION:{c}");
+                //Print(map);
             }
 
             Print(map);
@@ -94,6 +105,7 @@ namespace AdventOfCode2024
             // Calculate score
             var score = GetScore(map);
 
+            // 1430242 is too high, apparently
             Console.WriteLine(score);
         }
 
@@ -103,19 +115,10 @@ namespace AdventOfCode2024
             if (thingBeingMoved == '.') { return true; }
             if (thingBeingMoved == '#') { return false; }
             var nextSquare = (thingToMove.Item1 + direction.Item1, thingToMove.Item2 + direction.Item2);
-            var nextThing = map[nextSquare.Item1, nextSquare.Item2];
 
             if (thingBeingMoved == '@')
             {
                 var successful = Move2(map, nextSquare, direction);
-
-                // Actually do the move
-                if (successful)
-                {
-                    map[thingToMove.Item1, thingToMove.Item2] = '.';
-                    map[nextSquare.Item1, nextSquare.Item2] = '@';
-                }
-
                 return successful;
             }
 
@@ -125,13 +128,6 @@ namespace AdventOfCode2024
                 if (direction.Item1 != 0)
                 {
                     var successful = Move2(map, (thingToMove.Item1 + 2*direction.Item1, thingToMove.Item2 + 2*direction.Item2), direction);
-                    if (successful)
-                    {
-                        map[thingToMove.Item1 + 2 * direction.Item1, thingToMove.Item2 + 2 * direction.Item2] = map[thingToMove.Item1 + 1 * direction.Item1, thingToMove.Item2 + 1 * direction.Item2];
-                        map[thingToMove.Item1 + 1 * direction.Item1, thingToMove.Item2 + 1 * direction.Item2] = map[thingToMove.Item1, thingToMove.Item2];
-                        map[thingToMove.Item1, thingToMove.Item2] = '.';
-                    }
-
                     return successful;
                 }
                 // Moving up/down
@@ -142,27 +138,11 @@ namespace AdventOfCode2024
                     {
                         successful = Move2(map, (thingToMove.Item1, thingToMove.Item2 + direction.Item2), direction)
                             && Move2(map, (thingToMove.Item1 + 1, thingToMove.Item2 + direction.Item2), direction);
-
-                        if (successful)
-                        {
-                            map[thingToMove.Item1, thingToMove.Item2 + direction.Item2] = map[thingToMove.Item1, thingToMove.Item2];
-                            map[thingToMove.Item1 + 1, thingToMove.Item2 + direction.Item2] = map[thingToMove.Item1 + 1, thingToMove.Item2];
-                            map[thingToMove.Item1, thingToMove.Item2] = '.';
-                            map[thingToMove.Item1 + 1, thingToMove.Item2] = '.';
-                        }
                     }
                     else if (thingBeingMoved == ']')
                     {
                         successful = Move2(map, (thingToMove.Item1, thingToMove.Item2 + direction.Item2), direction)
                             && Move2(map, (thingToMove.Item1 - 1, thingToMove.Item2 + direction.Item2), direction);
-
-                        if (successful)
-                        {
-                            map[thingToMove.Item1, thingToMove.Item2 + direction.Item2] = map[thingToMove.Item1, thingToMove.Item2];
-                            map[thingToMove.Item1 - 1, thingToMove.Item2 + direction.Item2] = map[thingToMove.Item1 - 1, thingToMove.Item2];
-                            map[thingToMove.Item1, thingToMove.Item2] = '.';
-                            map[thingToMove.Item1 - 1, thingToMove.Item2] = '.';
-                        }
                     }
 
                     return successful;
@@ -170,6 +150,50 @@ namespace AdventOfCode2024
             }
 
             throw new Exception($"INVALID THING ENCOUNTERED:{thingBeingMoved}");
+        }
+
+        // Assume that moving can be done - apply it
+        public static void MoveBoxes(char[,] map, (int, int) thingToMove, (int, int) direction)
+        {
+            var thingBeingMoved = map[thingToMove.Item1, thingToMove.Item2];
+            if (thingBeingMoved == '.') { return; }
+            if (thingBeingMoved == '#') { return; }
+
+            if (direction.Item1 != 0)
+            {
+                MoveBoxes(map, (thingToMove.Item1 + 2 * direction.Item1, thingToMove.Item2), direction);
+
+                map[thingToMove.Item1 + 2 * direction.Item1, thingToMove.Item2 + 2 * direction.Item2] = map[thingToMove.Item1 + 1 * direction.Item1, thingToMove.Item2 + 1 * direction.Item2];
+                map[thingToMove.Item1 + 1 * direction.Item1, thingToMove.Item2 + 1 * direction.Item2] = map[thingToMove.Item1, thingToMove.Item2];
+                map[thingToMove.Item1, thingToMove.Item2] = '.';
+                return;
+            }
+            // Moving up/down
+            else if (direction.Item1 == 0)
+            {
+                if (thingBeingMoved == '[')
+                {
+                    MoveBoxes(map, (thingToMove.Item1, thingToMove.Item2 + direction.Item2), direction);
+                    MoveBoxes(map, (thingToMove.Item1 + 1, thingToMove.Item2 + direction.Item2), direction);
+
+                    map[thingToMove.Item1, thingToMove.Item2 + direction.Item2] = map[thingToMove.Item1, thingToMove.Item2];
+                    map[thingToMove.Item1 + 1, thingToMove.Item2 + direction.Item2] = map[thingToMove.Item1 + 1, thingToMove.Item2];
+                    map[thingToMove.Item1, thingToMove.Item2] = '.';
+                    map[thingToMove.Item1 + 1, thingToMove.Item2] = '.';
+                    return;
+                }
+                else if (thingBeingMoved == ']')
+                {
+                    MoveBoxes(map, (thingToMove.Item1, thingToMove.Item2 + direction.Item2), direction);
+                    MoveBoxes(map, (thingToMove.Item1 - 1, thingToMove.Item2 + direction.Item2), direction);
+
+                    map[thingToMove.Item1, thingToMove.Item2 + direction.Item2] = map[thingToMove.Item1, thingToMove.Item2];
+                    map[thingToMove.Item1 - 1, thingToMove.Item2 + direction.Item2] = map[thingToMove.Item1 - 1, thingToMove.Item2];
+                    map[thingToMove.Item1, thingToMove.Item2] = '.';
+                    map[thingToMove.Item1 - 1, thingToMove.Item2] = '.';
+                    return;
+                }
+            }
         }
         
         public static int GetScore(char[,] map)
