@@ -22,10 +22,39 @@ namespace AdventOfCode2024
                     points.Add((x, y));
                 }
                 else { break; }
-                // Part 1 - only first 1024 things
-                if (points.Count == 1024) { break; }
             }
 
+            // I guess we binary search (with a bias for solving?)
+            var lower = 1024;
+            var higher = points.Count;
+
+            // Some kind of binary search - we don't even need to do it properly
+            /*
+            while (lower < higher)
+            {
+                var midpoint = (lower + higher) / 2;
+                Console.WriteLine($"Exploring {midpoint}.");
+                var minPath = FindPath(points.GetRange(0, midpoint));
+                Console.WriteLine($"MinPathLength for {midpoint} is {minPath}.");
+                if (minPath > 0)
+                {
+                    lower = (lower + midpoint) / 2;
+                }
+                else
+                {
+                    higher = (midpoint + higher) / 2;
+                }
+            }
+
+            Console.WriteLine($"Lower:{lower}, Higher:{higher}");
+            */
+            // Solution is somewhere below 2933 - we didn't bother with off by one
+            Console.WriteLine($"2933 - {FindPath(points.GetRange(0, 2933))} - {points[2933]}");
+            Console.WriteLine($"2934 - {FindPath(points.GetRange(0, 2934))} - {points[2934]}");
+        }
+
+        public static int FindPath(List<(int x, int y)> points)
+        {
             Console.WriteLine("Calculating");
             const int SPACE = 70;
             var map = new bool[SPACE + 1, SPACE + 1];
@@ -39,15 +68,13 @@ namespace AdventOfCode2024
             explore.Add((0, 0, 0));
 
             var dirs = new List<(int x, int y)>() { (0, 1), (1, 0), (0, -1), (-1, 0) };
-            var minCost = -1;
             while (explore.Count > 0)
             {
                 var nextNode = explore[0];
                 explore.RemoveAt(0);
                 if ((nextNode.x, nextNode.y) == (SPACE, SPACE))
                 {
-                    minCost = nextNode.path;
-                    break;
+                    return nextNode.path;
                 }
 
                 foreach (var d in dirs)
@@ -67,7 +94,7 @@ namespace AdventOfCode2024
                 }
             }
 
-            Console.WriteLine(minCost);
+            return -1;
         }
     }
 }
