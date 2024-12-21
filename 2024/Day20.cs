@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
@@ -47,11 +48,26 @@ namespace AdventOfCode2024
             var shortestPathNoCheat = ShortestPathLength(map, start, end, Int32.MaxValue);
             Console.WriteLine($"No cheat length: {shortestPathNoCheat}");
 
+            // Legal length is shortestPath - 99 - one off error
             var legalLength = shortestPathNoCheat - 99;
+            //var legalLength = shortestPathNoCheat;
             var possibleCheats = PathsWithCheat(map, start, end, legalLength);
 
             // Sort - just to double check input
             possibleCheats.Sort();
+
+            // Checking on test input
+            var timeTaken = new Dictionary<int, int>();
+            foreach (var p in possibleCheats)
+            {
+                if (!timeTaken.ContainsKey(p.length))
+                {
+                    timeTaken[p.length] = 0;
+                }
+
+                timeTaken[p.length]++;
+            }
+
             var count = possibleCheats.Count(c => c.length < legalLength);
             Console.WriteLine($"Cheats saving: {count}");
         }
@@ -101,19 +117,41 @@ namespace AdventOfCode2024
             var distanceToEnd = new Dictionary<(int x, int y), int>();
             distanceToEnd[start] = lengthLimit;
             distanceToEnd[end] = 0;
-            var dirCheat = new List<(int x, int y)>() { (0, 2), (2, 0), (0, -2), (-2, 0) };
+
+            // Part B: EXACTLY THE SAME, just modify "dirCheat"
+            // var dirCheat = new List<(int x, int y)>() { (0, 2), (2, 0), (0, -2), (-2, 0) };
+            var dirCheat = new List<(int x, int y)>();
+            {
+                for (var x = -20; x <= 20; x++)
+                {
+                    for (var y = -20; y <= 20; y++)
+                    {
+                        if (Math.Abs(x) + Math.Abs(y) > 20) { continue; }
+                        dirCheat.Add((x, y));
+                    }
+                }
+            }
+
             foreach (var r in reachable)
             {
+                var s = Stopwatch.StartNew();
                 Console.WriteLine($"Progress:{pointsAnalyzed++}");
                 var point = r.Key;
                 var distanceFromStart = r.Value;
                 var depthLimit = lengthLimit - distanceFromStart - 2;
+                var cacheHits = 0;
+                var cacheMisses = 0;
 
                 foreach (var d in dirCheat)
                 {
-                    try
-                    {
                         var nextGrid = (point.x + d.x, point.y + d.y);
+
+                        // Fine, we do some bounds checking just because exception handling takes too long
+                        if (nextGrid.Item1 <= 0 
+                        || nextGrid.Item2 <= 0
+                        || nextGrid.Item1 >= map.GetLength(0)
+                        || nextGrid.Item2 >= map.GetLength(1)) { continue; }
+
                         var charAt = map[nextGrid.Item1, nextGrid.Item2];
                         if (charAt != '.') { continue; }
 
@@ -121,22 +159,26 @@ namespace AdventOfCode2024
                         {
                             if (distanceToEnd[nextGrid] < 0) { continue; }
 
-                            var totalDistance = distanceFromStart + distanceToEnd[nextGrid] + 2;
+                            var totalDistance = distanceFromStart + distanceToEnd[nextGrid] + Math.Abs(d.x) + Math.Abs(d.y);
                             retVal.Add((totalDistance, point.x, point.y, nextGrid.Item1, nextGrid.Item2));
+                            cacheHits++;
                             continue;
                         }
 
                         var distanceFromPoint = ShortestPathLength(map, nextGrid, end, depthLimit);
+                        cacheMisses++;
                         if (distanceFromPoint > 0)
                         {
-                            var totalDistance = distanceFromStart + distanceFromPoint + 2;
+                            var totalDistance = distanceFromStart + distanceFromPoint + Math.Abs(d.x) + Math.Abs(d.y);
                             retVal.Add((totalDistance, point.x, point.y, nextGrid.Item1, nextGrid.Item2));
-                            distanceToEnd[nextGrid] = distanceFromPoint;
                         }
-                    }
-                    // Do nothing - out of bounds
-                    catch { }
+
+                        // If it can't be reached, cache anyway
+                        distanceToEnd[nextGrid] = distanceFromPoint;
                 }
+
+                s.Stop();
+                Console.WriteLine($"Analysis took {s.Elapsed}, Hits:{cacheHits}, Misses:{cacheMisses}");
             }
 
             return retVal;
