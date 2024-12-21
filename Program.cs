@@ -2,4 +2,4 @@
 using System.Diagnostics;
 using AdventOfCode2024;
 
-Day18.Run();
+Day19.Run();
