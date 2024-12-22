@@ -91,15 +91,12 @@ namespace AdventOfCode2024
             };
 
             var startDir = 0; // 0 meaning facing east
-
-            var encountered = new HashSet<(int x, int y, int facing)>();
             var lowestCostPathToPoint = new Dictionary<(int x, int y, int facing), int>();
             var pathsToPoint = new Dictionary<(int x, int y, int facing), List<string>>();
 
             var stack = new List<(int x, int y, int cost, int facing, string currentPath)>();
 
             stack.Add((start.Item1, start.Item2, 0, 0, $"{start.Item1},{start.Item2}"));
-            encountered.Add((start.Item1, start.Item2, 0));
             lowestCostPathToPoint[(start.Item1, start.Item2, 0)] = 0;
             pathsToPoint[(start.Item1, start.Item2, 0)] = new List<string>() { "" };
 
@@ -145,20 +142,17 @@ namespace AdventOfCode2024
                     {
                         var newPath = nextNode.currentPath + $"|{sdc.space.x},{sdc.space.y}";
                         var nextEntry = (sdc.space.x, sdc.space.y, sdc.dir);
-                        if (!encountered.Contains(nextEntry))
+                        if (!lowestCostPathToPoint.ContainsKey(nextEntry))
                         {
-                            if (!lowestCostPathToPoint.ContainsKey(nextEntry))
-                            {
-                                lowestCostPathToPoint[nextEntry] = sdc.cost;
-                                pathsToPoint[nextEntry] = new List<string> { newPath };
-                            }
+                            lowestCostPathToPoint[nextEntry] = sdc.cost;
+                            pathsToPoint[nextEntry] = new List<string>();
+                        }
 
-                            var lowestCostPath = lowestCostPathToPoint[nextEntry];
-                            if (lowestCostPath <= sdc.cost)
-                            {
-                                stack.Add((sdc.space.x, sdc.space.y, sdc.cost, sdc.dir, newPath));
-                                encountered.Add(nextEntry);
-                            }
+                        var lowestCostPath = lowestCostPathToPoint[nextEntry];
+                        if (sdc.cost <= lowestCostPath)
+                        {
+                            stack.Add((sdc.space.x, sdc.space.y, sdc.cost, sdc.dir, newPath));
+                            pathsToPoint[nextEntry].Add(newPath);
                         }
                     }
                 }
