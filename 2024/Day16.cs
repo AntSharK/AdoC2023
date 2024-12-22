@@ -45,12 +45,46 @@ namespace AdventOfCode2024
                 }
             }
 
-            (var minCost, var path) = FindPath(map, start, end);
-            Console.WriteLine($"MinCost:{minCost}, Path:{path}");
+            foreach (var path in FindPaths(map, start, end))
+            {
+                Console.WriteLine($"Cost: {path.Item1}, Path: {path.Item2}");
+                // Mark occupied nodes
+
+                foreach (var point in path.Item2.Split('|', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var ps = point.Split(',');
+                    map[Int32.Parse(ps[0]), Int32.Parse(ps[1])] = 'O';
+                }
+            }
+
+            Print(map);
         }
 
-        public static (int, string) FindPath(char[,] map, (int, int) start, (int, int) end)
+        public static void Print(char[,] map)
         {
+            var count = 0;
+            var sb = new StringBuilder();
+            for (var y = 0; y < map.GetLength(1); y++)
+            {
+                for (var x = 0; x < map.GetLength(0); x++)
+                {
+                    sb.Append(map[x, y]);
+                    if (map[x,y] == 'O')
+                    {
+                        count++;
+                    }
+                }
+                sb.Append('\n');
+            }
+            Console.WriteLine(sb.ToString());
+            Console.WriteLine($"Occupied: {count}");
+        }
+
+        public static List<(int, string)> FindPaths(char[,] map, (int, int) start, (int, int) end)
+        {
+            var minCostToDest = -1;
+            var retVal = new List<(int, string)>();
+
             var directions = new List<(int, int)>()
             {
                 (1, 0), (0, 1), (-1, 0), (0, -1)
@@ -58,21 +92,29 @@ namespace AdventOfCode2024
 
             var startDir = 0; // 0 meaning facing east
 
-            var encountered = new HashSet<(int x, int y, int facing)>();
+            var encountered = new HashSet<(int x, int y, int facing, string pathTo)>();
             var stack = new List<(int x, int y, int cost, int facing, string currentPath)>();
 
-            stack.Add((start.Item1, start.Item2, 0, 0, ""));
-            encountered.Add((start.Item1, start.Item2, 0));
+            stack.Add((start.Item1, start.Item2, 0, 0, $"{start.Item1},{start.Item2}"));
+            encountered.Add((start.Item1, start.Item2, 0, $"{start.Item1},{start.Item2}"));
 
             while (stack.Count > 0)
             {
                 var nextNode = stack.First();
+                if (minCostToDest > 0 && nextNode.cost > minCostToDest) { break; }
+
                 stack.RemoveAt(0);
 
-                Console.WriteLine($"Exploring: ({nextNode.x},{nextNode.y}), Cost:{nextNode.cost},Facing:{nextNode.facing},Path:{nextNode.currentPath}");
+                //Console.WriteLine($"Exploring: ({nextNode.x},{nextNode.y}), Cost:{nextNode.cost},Facing:{nextNode.facing},Path:{nextNode.currentPath}");
+                Console.WriteLine($"Exploring: ({nextNode.x},{nextNode.y}), Cost:{nextNode.cost}");
                 if ((nextNode.x, nextNode.y) == end)
                 {
-                    return (nextNode.cost, nextNode.currentPath);
+                    if (minCostToDest < 0)
+                    {
+                        minCostToDest = nextNode.cost;
+                    }
+
+                    retVal.Add((nextNode.cost, nextNode.currentPath));
                 }
 
                 // Add in front
@@ -84,10 +126,11 @@ namespace AdventOfCode2024
                 var frontSpace = (nextNode.x + curDir.Item1, nextNode.y + curDir.Item2);
                 if (map[frontSpace.Item1, frontSpace.Item2] == '.')
                 {
-                    if (!encountered.Contains((frontSpace.Item1, frontSpace.Item2, nextNode.facing)))
+                    var newPath = nextNode.currentPath + $"|{frontSpace.Item1},{frontSpace.Item2}";
+                    if (!encountered.Contains((frontSpace.Item1, frontSpace.Item2, nextNode.facing, newPath)))
                     {
-                        stack.Add((frontSpace.Item1, frontSpace.Item2, nextNode.cost + 1, nextNode.facing, nextNode.currentPath + "."));
-                        encountered.Add((frontSpace.Item1, frontSpace.Item2, nextNode.facing));
+                        stack.Add((frontSpace.Item1, frontSpace.Item2, nextNode.cost + 1, nextNode.facing, newPath));
+                        encountered.Add((frontSpace.Item1, frontSpace.Item2, nextNode.facing, newPath));
                     }
                 }
 
@@ -95,10 +138,11 @@ namespace AdventOfCode2024
                 var rightSpace = (nextNode.x + rightDir.Item1, nextNode.y + rightDir.Item2);
                 if (map[rightSpace.Item1, rightSpace.Item2] == '.')
                 {
-                    if (!encountered.Contains((rightSpace.Item1, rightSpace.Item2, rightFace)))
+                    var newPath = nextNode.currentPath + $"|{rightSpace.Item1},{rightSpace.Item2}";
+                    if (!encountered.Contains((rightSpace.Item1, rightSpace.Item2, rightFace, newPath)))
                     {
-                        stack.Add((rightSpace.Item1, rightSpace.Item2, nextNode.cost + 1001, rightFace, nextNode.currentPath + "R"));
-                        encountered.Add((rightSpace.Item1, rightSpace.Item2, rightFace));
+                        stack.Add((rightSpace.Item1, rightSpace.Item2, nextNode.cost + 1001, rightFace, newPath));
+                        encountered.Add((rightSpace.Item1, rightSpace.Item2, rightFace, newPath));
                     }
                 }
 
@@ -106,10 +150,11 @@ namespace AdventOfCode2024
                 var leftSpace = (nextNode.x + leftDir.Item1, nextNode.y + leftDir.Item2);
                 if (map[leftSpace.Item1, leftSpace.Item2] == '.')
                 {
-                    if (!encountered.Contains((leftSpace.Item1, leftSpace.Item2, leftFace)))
+                    var newPath = nextNode.currentPath + $"|{leftSpace.Item1},{leftSpace.Item2}";
+                    if (!encountered.Contains((leftSpace.Item1, leftSpace.Item2, leftFace, newPath)))
                     {
-                        stack.Add((leftSpace.Item1, leftSpace.Item2, nextNode.cost + 1001, leftFace, nextNode.currentPath + "L"));
-                        encountered.Add((leftSpace.Item1, leftSpace.Item2, leftFace));
+                        stack.Add((leftSpace.Item1, leftSpace.Item2, nextNode.cost + 1001, leftFace, newPath));
+                        encountered.Add((leftSpace.Item1, leftSpace.Item2, leftFace, newPath));
                     }
                 }
 
@@ -117,7 +162,7 @@ namespace AdventOfCode2024
                 stack.Sort((x, y) => x.cost - y.cost);
             }
 
-            return (-1, "");
+            return retVal;
         }
     }
 }
