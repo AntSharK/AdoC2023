@@ -93,10 +93,13 @@ namespace AdventOfCode2024
             var startDir = 0; // 0 meaning facing east
 
             var encountered = new HashSet<(int x, int y, int facing, string pathTo)>();
+            var lowestCostPathToPoint = new Dictionary<(int x, int y, int facing), int>();
+
             var stack = new List<(int x, int y, int cost, int facing, string currentPath)>();
 
             stack.Add((start.Item1, start.Item2, 0, 0, $"{start.Item1},{start.Item2}"));
             encountered.Add((start.Item1, start.Item2, 0, $"{start.Item1},{start.Item2}"));
+            lowestCostPathToPoint[(start.Item1, start.Item2, 0)] = 0;
 
             while (stack.Count > 0)
             {
@@ -127,10 +130,20 @@ namespace AdventOfCode2024
                 if (map[frontSpace.Item1, frontSpace.Item2] == '.')
                 {
                     var newPath = nextNode.currentPath + $"|{frontSpace.Item1},{frontSpace.Item2}";
+                    var newCost = nextNode.cost + 1;
                     if (!encountered.Contains((frontSpace.Item1, frontSpace.Item2, nextNode.facing, newPath)))
                     {
-                        stack.Add((frontSpace.Item1, frontSpace.Item2, nextNode.cost + 1, nextNode.facing, newPath));
-                        encountered.Add((frontSpace.Item1, frontSpace.Item2, nextNode.facing, newPath));
+                        if (!lowestCostPathToPoint.ContainsKey((frontSpace.Item1, frontSpace.Item2, nextNode.facing)))
+                        {
+                            lowestCostPathToPoint[(frontSpace.Item1, frontSpace.Item2, nextNode.facing)] = newCost;
+                        }
+
+                        var lowestCostPath = lowestCostPathToPoint[(frontSpace.Item1, frontSpace.Item2, nextNode.facing)];
+                        if (lowestCostPath <= newCost)
+                        {
+                            stack.Add((frontSpace.Item1, frontSpace.Item2, newCost, nextNode.facing, newPath));
+                            encountered.Add((frontSpace.Item1, frontSpace.Item2, nextNode.facing, newPath));
+                        }
                     }
                 }
 
@@ -139,10 +152,20 @@ namespace AdventOfCode2024
                 if (map[rightSpace.Item1, rightSpace.Item2] == '.')
                 {
                     var newPath = nextNode.currentPath + $"|{rightSpace.Item1},{rightSpace.Item2}";
+                    var newCost = nextNode.cost + 1001;
                     if (!encountered.Contains((rightSpace.Item1, rightSpace.Item2, rightFace, newPath)))
                     {
-                        stack.Add((rightSpace.Item1, rightSpace.Item2, nextNode.cost + 1001, rightFace, newPath));
-                        encountered.Add((rightSpace.Item1, rightSpace.Item2, rightFace, newPath));
+                        if (!lowestCostPathToPoint.ContainsKey((rightSpace.Item1, rightSpace.Item2, rightFace)))
+                        {
+                            lowestCostPathToPoint[(rightSpace.Item1, rightSpace.Item2, rightFace)] = newCost;
+                        }
+
+                        var lowestCostPath = lowestCostPathToPoint[(rightSpace.Item1, rightSpace.Item2, rightFace)];
+                        if (lowestCostPath <= newCost)
+                        {
+                            stack.Add((rightSpace.Item1, rightSpace.Item2, newCost, rightFace, newPath));
+                            encountered.Add((rightSpace.Item1, rightSpace.Item2, rightFace, newPath));
+                        }
                     }
                 }
 
@@ -151,10 +174,20 @@ namespace AdventOfCode2024
                 if (map[leftSpace.Item1, leftSpace.Item2] == '.')
                 {
                     var newPath = nextNode.currentPath + $"|{leftSpace.Item1},{leftSpace.Item2}";
+                    var newCost = nextNode.cost + 1001;
                     if (!encountered.Contains((leftSpace.Item1, leftSpace.Item2, leftFace, newPath)))
                     {
-                        stack.Add((leftSpace.Item1, leftSpace.Item2, nextNode.cost + 1001, leftFace, newPath));
-                        encountered.Add((leftSpace.Item1, leftSpace.Item2, leftFace, newPath));
+                        if (!lowestCostPathToPoint.ContainsKey((leftSpace.Item1, leftSpace.Item2, leftFace)))
+                        {
+                            lowestCostPathToPoint[(leftSpace.Item1, leftSpace.Item2, leftFace)] = newCost;
+                        }
+
+                        var lowestCostPath = lowestCostPathToPoint[(leftSpace.Item1, leftSpace.Item2, leftFace)];
+                        if (lowestCostPath <= newCost)
+                        {
+                            stack.Add((leftSpace.Item1, leftSpace.Item2, newCost, leftFace, newPath));
+                            encountered.Add((leftSpace.Item1, leftSpace.Item2, leftFace, newPath));
+                        }
                     }
                 }
 
