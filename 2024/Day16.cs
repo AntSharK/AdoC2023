@@ -92,14 +92,16 @@ namespace AdventOfCode2024
 
             var startDir = 0; // 0 meaning facing east
 
-            var encountered = new HashSet<(int x, int y, int facing, string pathTo)>();
+            var encountered = new HashSet<(int x, int y, int facing)>();
             var lowestCostPathToPoint = new Dictionary<(int x, int y, int facing), int>();
+            var pathsToPoint = new Dictionary<(int x, int y, int facing), List<string>>();
 
             var stack = new List<(int x, int y, int cost, int facing, string currentPath)>();
 
             stack.Add((start.Item1, start.Item2, 0, 0, $"{start.Item1},{start.Item2}"));
-            encountered.Add((start.Item1, start.Item2, 0, $"{start.Item1},{start.Item2}"));
+            encountered.Add((start.Item1, start.Item2, 0));
             lowestCostPathToPoint[(start.Item1, start.Item2, 0)] = 0;
+            pathsToPoint[(start.Item1, start.Item2, 0)] = new List<string>() { "" };
 
             while (stack.Count > 0)
             {
@@ -127,66 +129,36 @@ namespace AdventOfCode2024
                 var leftFace = (nextNode.facing + 3) % 4;
                 var leftDir = directions[leftFace];
                 var frontSpace = (nextNode.x + curDir.Item1, nextNode.y + curDir.Item2);
-                if (map[frontSpace.Item1, frontSpace.Item2] == '.')
-                {
-                    var newPath = nextNode.currentPath + $"|{frontSpace.Item1},{frontSpace.Item2}";
-                    var newCost = nextNode.cost + 1;
-                    if (!encountered.Contains((frontSpace.Item1, frontSpace.Item2, nextNode.facing, newPath)))
-                    {
-                        if (!lowestCostPathToPoint.ContainsKey((frontSpace.Item1, frontSpace.Item2, nextNode.facing)))
-                        {
-                            lowestCostPathToPoint[(frontSpace.Item1, frontSpace.Item2, nextNode.facing)] = newCost;
-                        }
-
-                        var lowestCostPath = lowestCostPathToPoint[(frontSpace.Item1, frontSpace.Item2, nextNode.facing)];
-                        if (lowestCostPath <= newCost)
-                        {
-                            stack.Add((frontSpace.Item1, frontSpace.Item2, newCost, nextNode.facing, newPath));
-                            encountered.Add((frontSpace.Item1, frontSpace.Item2, nextNode.facing, newPath));
-                        }
-                    }
-                }
-
-                // Add right
                 var rightSpace = (nextNode.x + rightDir.Item1, nextNode.y + rightDir.Item2);
-                if (map[rightSpace.Item1, rightSpace.Item2] == '.')
-                {
-                    var newPath = nextNode.currentPath + $"|{rightSpace.Item1},{rightSpace.Item2}";
-                    var newCost = nextNode.cost + 1001;
-                    if (!encountered.Contains((rightSpace.Item1, rightSpace.Item2, rightFace, newPath)))
-                    {
-                        if (!lowestCostPathToPoint.ContainsKey((rightSpace.Item1, rightSpace.Item2, rightFace)))
-                        {
-                            lowestCostPathToPoint[(rightSpace.Item1, rightSpace.Item2, rightFace)] = newCost;
-                        }
-
-                        var lowestCostPath = lowestCostPathToPoint[(rightSpace.Item1, rightSpace.Item2, rightFace)];
-                        if (lowestCostPath <= newCost)
-                        {
-                            stack.Add((rightSpace.Item1, rightSpace.Item2, newCost, rightFace, newPath));
-                            encountered.Add((rightSpace.Item1, rightSpace.Item2, rightFace, newPath));
-                        }
-                    }
-                }
-
-                // Add left
                 var leftSpace = (nextNode.x + leftDir.Item1, nextNode.y + leftDir.Item2);
-                if (map[leftSpace.Item1, leftSpace.Item2] == '.')
-                {
-                    var newPath = nextNode.currentPath + $"|{leftSpace.Item1},{leftSpace.Item2}";
-                    var newCost = nextNode.cost + 1001;
-                    if (!encountered.Contains((leftSpace.Item1, leftSpace.Item2, leftFace, newPath)))
-                    {
-                        if (!lowestCostPathToPoint.ContainsKey((leftSpace.Item1, leftSpace.Item2, leftFace)))
-                        {
-                            lowestCostPathToPoint[(leftSpace.Item1, leftSpace.Item2, leftFace)] = newCost;
-                        }
 
-                        var lowestCostPath = lowestCostPathToPoint[(leftSpace.Item1, leftSpace.Item2, leftFace)];
-                        if (lowestCostPath <= newCost)
+                var spaceDirCost = new List<((int x, int y) space, int dir, int cost)>
+                {
+                    (frontSpace, nextNode.facing, nextNode.cost + 1),
+                    (rightSpace, rightFace, nextNode.cost + 1001),
+                    (leftSpace, leftFace, nextNode.cost + 1001),
+                };
+
+                foreach (var sdc in spaceDirCost)
+                {
+                    if (map[sdc.space.x, sdc.space.y] == '.')
+                    {
+                        var newPath = nextNode.currentPath + $"|{sdc.space.x},{sdc.space.y}";
+                        var nextEntry = (sdc.space.x, sdc.space.y, sdc.dir);
+                        if (!encountered.Contains(nextEntry))
                         {
-                            stack.Add((leftSpace.Item1, leftSpace.Item2, newCost, leftFace, newPath));
-                            encountered.Add((leftSpace.Item1, leftSpace.Item2, leftFace, newPath));
+                            if (!lowestCostPathToPoint.ContainsKey(nextEntry))
+                            {
+                                lowestCostPathToPoint[nextEntry] = sdc.cost;
+                                pathsToPoint[nextEntry] = new List<string> { newPath };
+                            }
+
+                            var lowestCostPath = lowestCostPathToPoint[nextEntry];
+                            if (lowestCostPath <= sdc.cost)
+                            {
+                                stack.Add((sdc.space.x, sdc.space.y, sdc.cost, sdc.dir, newPath));
+                                encountered.Add(nextEntry);
+                            }
                         }
                     }
                 }
