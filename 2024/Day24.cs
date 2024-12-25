@@ -42,30 +42,51 @@ namespace AdventOfCode2024
                 FindVal(f.Key);
             }
 
-            var zGates = new List<(string, bool)>();
-            foreach (var f in from)
-            {
-                if (f.Key.StartsWith('z'))
-                {
-                    Console.WriteLine($"{f.Key}:{vals[f.Key]}");
-                    zGates.Add((f.Key, vals[f.Key]));
-                }
-            }
+            (var x, var y, var z) = GetXYZ();
+            Console.WriteLine($"x:{x} + y:{y} = z:{z}");
+        }
 
-            zGates.Sort();
-            var total = 0l;
+        public static (long, long, long) GetXYZ()
+        {
+            var xGates = vals.Where(x => x.Key.StartsWith('x')).OrderBy(c => c.Key);
+            var yGates = vals.Where(x => x.Key.StartsWith('y')).OrderBy(c => c.Key);
+            var zGates = vals.Where(x => x.Key.StartsWith('z')).OrderBy(c => c.Key); ;
+
+            var totalx = 0l;
+            var totaly = 0l;
+            var totalz = 0l;
             var dex = 1l;
-            foreach (var z in zGates)
+            foreach (var a in xGates)
             {
-                if (z.Item2)
+                if (a.Value)
                 {
-                    total = total + dex;
+                    totalx = totalx + dex;
+                }
+
+                dex = dex * 2l;
+            }
+            dex = 1l;
+            foreach (var a in yGates)
+            {
+                if (a.Value)
+                {
+                    totaly = totaly + dex;
+                }
+
+                dex = dex * 2l;
+            }
+            dex = 1l;
+            foreach (var a in zGates)
+            {
+                if (a.Value)
+                {
+                    totalz = totalz + dex;
                 }
 
                 dex = dex * 2l;
             }
 
-            Console.WriteLine(total);
+            return (totalx, totaly, totalz);
         }
 
         public static bool FindVal(string gate)
